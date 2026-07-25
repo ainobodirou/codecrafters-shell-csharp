@@ -4,6 +4,6 @@ class ShellProgram
     {
          Console.Write("$ ");
          string command = Console.ReadLine();
-         Console.WriteLine("{command}: command not found", command);
+         Console.WriteLine($"{command}: command not found");
     }
 }
