@@ -10,6 +10,10 @@ class ShellProgram
             {
                 break;
             }
+            if (command.StartsWith("echo"))
+            {
+                Console.WriteLine(command[5..]);
+            }
             Console.WriteLine($"{command}: command not found");
         }
     }
