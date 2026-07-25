@@ -13,6 +13,7 @@ class ShellProgram
             if (command.StartsWith("echo "))
             {
                 Console.WriteLine(command[5..]);
+                continue;
             }
             if (command.StartsWith("type"))
             {
