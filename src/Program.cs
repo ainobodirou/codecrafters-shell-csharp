@@ -10,7 +10,7 @@ class ShellProgram
             {
                 break;
             }
-            if (command.StartsWith("echo"))
+            if (command.StartsWith("echo "))
             {
                 Console.WriteLine(command[5..]);
             }
@@ -19,9 +19,10 @@ class ShellProgram
                 if (command[5..] == "echo" || command[5..] == "type" || command[5..] =="exit")
                 {
                     Console.WriteLine(command[5..] + " is a shell builtin");
-                } 
-                else{
-                    Console.WriteLine(command[5..]+": not found");
+                }
+                else
+                {
+                    Console.WriteLine($"{command}: command not found");
                 }
             }
             else {
