@@ -22,7 +22,7 @@ class ShellProgram
                 }
                 else
                 {
-                    Console.WriteLine($"{command[5..]}: command not found");
+                    Console.WriteLine($"{command[5..]}: not found");
                 }
             }
             else {
