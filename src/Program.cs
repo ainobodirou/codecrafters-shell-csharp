@@ -14,7 +14,9 @@ class ShellProgram
             {
                 Console.WriteLine(command[5..]);
             }
-            Console.WriteLine($"{command}: command not found");
+            else {
+                Console.WriteLine($"{command}: command not found");
+            }
         }
     }
 
