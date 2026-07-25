@@ -16,12 +16,11 @@ class ShellProgram
             }
             if (command.StartsWith("type"))
             {
-                if (command[5..] == "echo" || "type" || "exit")
+                if (command[5..] == "echo" || command[5..] == "type" || command[5..] =="exit")
                 {
                     Console.Writeline(command[5..] + "is a shell builtin");
-                }
-                else
-                {
+                } 
+                else{
                     Console.WriteLine(command[5..]+": not found");
                 }
             }
