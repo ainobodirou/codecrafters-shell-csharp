@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+
 class ShellProgram
 {
     static void Main()
@@ -23,15 +27,40 @@ class ShellProgram
                 }
                 else
                 {
-                    Console.WriteLine($"{command[5..]}: not found");
+                    string target = command[5..];
+                    string? executable = FindExecutable(target);
+                    if(executable !=null)
+                        Console.WriteLine($"{target} is {executable}");
+                    else
+                        Console.WriteLine($"{target}: not found");
                 }
-            }
-            else {
-                Console.WriteLine($"{command}: command not found");
-            }
+            }  
         }
     }
-
+    static string? FindExecutable(string target)
+    {
+        string path = Environment.GetEnvironmentVariable("PATH");
+        char separator = Path.PathSeparator;
+        string [] directories = path!.Split(separator);
+        foreach (var dir in directories)
+        {
+            var filePath = Path.Combine(dir, target);
+            if (File.Exists(filePath))
+            {
+                var mode = File.GetUnixFileMode(filePath);
+                var executePermissions =
+                UnixFileMode.UserExecute |
+                UnixFileMode.GroupExecute |
+                UnixFileMode.OtherExecute;
+                
+                if((mode & executePermissions) != 0)
+                {
+                    return filePath;
+                }            
+            }
+        }
+        return null;
+    }
 }
 
 //REPL - Read Eval Print Loop is interactive loop forming core of the shell
