@@ -34,7 +34,11 @@ class ShellProgram
                     else
                         Console.WriteLine($"{target}: not found");
                 }
-            }  
+            }
+            else
+            {
+                Console.WriteLine($"{command}: command not found");
+            } 
         }
     }
     static string? FindExecutable(string target)
