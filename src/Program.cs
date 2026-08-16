@@ -19,10 +19,10 @@ class ShellProgram
             string text = Console.ReadLine().Trim();
             string command = "";
             string arg = "";
-            foreach (char c in command)
+            foreach (char c in text)
             {
                 if (char.IsWhiteSpace(c)){
-                    int i = command.IndexOf(c);
+                    int i = text.IndexOf(c);
                     command = text[..i];
                     arg = text[i..];
                 }
