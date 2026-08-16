@@ -79,6 +79,7 @@ class ShellProgram
         }
         else
         {
+            Console.WriteLine($"{command}: command not found");
             return true;
         }
     }
