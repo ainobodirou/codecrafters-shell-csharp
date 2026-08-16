@@ -1,5 +1,8 @@
 using System;
+using System.Data;
+using System.Diagnostics.Tracing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 class ShellProgram
@@ -12,8 +15,17 @@ class ShellProgram
          while (true)
         {
             Console.Write("$ ");
-            string command = Console.ReadLine();
-            string arg = command[5..];
+            string text = Console.ReadLine();
+            string command = text.Trim();
+            string arg = "";
+            foreach (char c in command)
+            {
+                if (char.IsWhiteSpace(c)){
+                    command = command[..c];
+                    arg = command[c..];
+                }
+                arg = string.Empty;
+            }
             Dispatch(command,arg);
         }
     }
