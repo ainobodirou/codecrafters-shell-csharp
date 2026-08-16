@@ -21,8 +21,9 @@ class ShellProgram
             foreach (char c in command)
             {
                 if (char.IsWhiteSpace(c)){
-                    command = command[..c];
-                    arg = command[c..];
+                    int i = command.IndexOf(c);
+                    command = command[..i];
+                    arg = command[i..];
                 }
                 arg = string.Empty;
             }
