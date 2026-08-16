@@ -25,7 +25,10 @@ class ShellProgram
                     command = command[..i];
                     arg = command[i..];
                 }
-                arg = string.Empty;
+                else
+                {
+                    arg = string.Empty;
+                }
             }
             Dispatch(command,arg);
         }
