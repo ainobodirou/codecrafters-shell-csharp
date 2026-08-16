@@ -9,28 +9,29 @@ class ShellProgram
 {
 
     public static List<string> builtins = new List<string> {"exit", "type", "echo"};
+    public static bool runshell = true;
 
     static void Main()
     {
-         while (true)
+         while (runshell is true)
         {
             Console.Write("$ ");
-            string text = Console.ReadLine();
-            string command = text.Trim();
+            string text = Console.ReadLine().Trim();
+            string command = "";
             string arg = "";
             foreach (char c in command)
             {
                 if (char.IsWhiteSpace(c)){
                     int i = command.IndexOf(c);
-                    command = command[..i];
-                    arg = command[i..];
+                    command = text[..i];
+                    arg = text[i..];
                 }
                 else
                 {
                     arg = string.Empty;
                 }
             }
-            Dispatch(command,arg);
+            runshell = Dispatch(command,arg);
         }
     }
     static string? FindExecutable(string target)
@@ -85,11 +86,11 @@ class ShellProgram
         {
             return false;
         }
-        if (command.StartsWith("echo"))
+        if (command == "echo")
         {
             return Echo(arg);
-        }
-        if (command.StartsWith("type"))
+        } 
+        if (command == "type")
         {
             return GetType(arg);
         }
