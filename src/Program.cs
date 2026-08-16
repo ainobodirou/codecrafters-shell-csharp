@@ -25,12 +25,14 @@ class ShellProgram
                     int i = text.IndexOf(c);
                     command = text[..i];
                     arg = text[i..];
+                    break;
                 }
                 else
                 {
-                    arg = string.Empty;
+                    command = text;
                 }
             }
+            
             runshell = Dispatch(command,arg);
         }
     }
