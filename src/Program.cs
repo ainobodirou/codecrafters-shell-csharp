@@ -4,41 +4,17 @@ using System.Runtime.InteropServices;
 
 class ShellProgram
 {
+
+    public static List<string> builtins = new List<string> {"exit", "type", "echo"};
+
     static void Main()
     {
          while (true)
         {
             Console.Write("$ ");
             string command = Console.ReadLine();
-            if (command == "exit")
-            {
-                break;
-            }
-            if (command.StartsWith("echo "))
-            {
-                Console.WriteLine(command[5..]);
-                continue;
-            }
-            if (command.StartsWith("type"))
-            {
-                if (command[5..] == "echo" || command[5..] == "type" || command[5..] =="exit")
-                {
-                    Console.WriteLine(command[5..] + " is a shell builtin");
-                }
-                else
-                {
-                    string target = command[5..];
-                    string? executable = FindExecutable(target);
-                    if(executable !=null)
-                        Console.WriteLine($"{target} is {executable}");
-                    else
-                        Console.WriteLine($"{target}: not found");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"{command}: command not found");
-            } 
+            string arg = command[5..];
+            Dispatch(command,arg);
         }
     }
     static string? FindExecutable(string target)
@@ -65,12 +41,45 @@ class ShellProgram
         }
         return null;
     }
+    static bool Echo(string arg)
+    {
+        Console.WriteLine(arg);
+        return true;
+    }
+
+    static bool GetType(string arg)
+    {
+        if (builtins.Contains(arg))
+        {
+            Console.WriteLine(arg + " is a shell builtin");
+        }
+        else
+        {
+            string? executable = FindExecutable(arg);
+            if(executable !=null)
+            Console.WriteLine($"{arg} is {executable}");
+            else
+            Console.WriteLine($"{arg}: not found");
+        }
+        return true;
+    }
+    static bool Dispatch(string command, string arg)
+    {
+        if(command == "exit")
+        {
+            return false;
+        }
+        if (command.StartsWith("echo"))
+        {
+            return Echo(arg);
+        }
+        if (command.StartsWith("type"))
+        {
+            return GetType(arg);
+        }
+        else
+        {
+            return true;
+        }
+    }
 }
-
-//REPL - Read Eval Print Loop is interactive loop forming core of the shell
-// Read; Displau a prompt and wait for user input 
-// Eval: parse and executre the command 
-// PrintL display output or error message 
-// Loop: return to step 1 and wait for next command 
-
-// Cycle is continues indef until shell process is terminated 
