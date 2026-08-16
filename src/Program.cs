@@ -23,8 +23,8 @@ class ShellProgram
             {
                 if (char.IsWhiteSpace(c)){
                     int i = text.IndexOf(c);
-                    command = text[..i];
-                    arg = text[i..];
+                    command = text[..i].Trim();
+                    arg = text[i..].Trim();
                     break;
                 }
                 else
