@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
 
 class ShellProgram
@@ -40,13 +41,13 @@ class ShellProgram
         }
         return null;
     }
-    static bool Echo(string [] commandArgs)
+    static void Echo(string [] commandArgs)
     {
         Console.WriteLine(string.Join("",commandArgs));
-        return true;
+        return;
     }
 
-    static bool GetType(string [] commandArgs)
+    static void GetType(string [] commandArgs)
     {
         string typeArg = commandArgs[1];
         if (builtins.Contains(typeArg))
@@ -61,7 +62,17 @@ class ShellProgram
             else
             Console.WriteLine($"{typeArg}: not found");
         }
-        return true;
+        return;
+    }
+
+    static void Execute(string command,string [] commandArgs)
+    {
+        string? executable = FindExecutable(command);
+        if(executable != null)
+            Process.Start(command, commandArgs[1..]).WaitForExit();
+        else
+            Console.WriteLine($"{command}: command not found");
+        return;
     }
     static bool Dispatch(string [] args)
     {   
@@ -83,7 +94,7 @@ class ShellProgram
         }
         else
         {
-            Console.WriteLine($"{command}: command not found");
+            Execute(command, commandArgs);
             return true;
         }
     }
