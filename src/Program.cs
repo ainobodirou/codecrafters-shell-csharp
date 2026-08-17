@@ -43,7 +43,7 @@ class ShellProgram
     }
     static void Echo(string [] commandArgs)
     {
-        Console.WriteLine(string.Join("",commandArgs));
+        Console.WriteLine(string.Join(" ",commandArgs));
         return;
     }
 
