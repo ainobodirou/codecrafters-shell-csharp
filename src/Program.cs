@@ -1,16 +1,8 @@
-using System;
-using System.Data;
-using System.Diagnostics.Tracing;
-using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-
 class ShellProgram
 {
 
     public static List<string> builtins = new List<string> {"exit", "type", "echo"};
     public static bool runshell = true;
-
     static void Main()
     {
          while (runshell is true)
@@ -32,7 +24,6 @@ class ShellProgram
                     command = text;
                 }
             }
-            
             runshell = Dispatch(command,arg);
         }
     }
@@ -90,11 +81,13 @@ class ShellProgram
         }
         if (command == "echo")
         {
-            return Echo(arg);
+            Echo(arg);
+            return true;
         } 
         if (command == "type")
         {
-            return GetType(arg);
+            GetType(arg);
+            return true;
         }
         else
         {
