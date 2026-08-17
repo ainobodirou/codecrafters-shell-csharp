@@ -1,7 +1,10 @@
+using System.Data;
+using System.Reflection.Metadata.Ecma335;
+
 class ShellProgram
 {
-
     public static List<string> builtins = new List<string> {"exit", "type", "echo"};
+
     public static bool runshell = true;
     static void Main()
     {
@@ -9,22 +12,8 @@ class ShellProgram
         {
             Console.Write("$ ");
             string text = Console.ReadLine().Trim();
-            string command = "";
-            string arg = "";
-            foreach (char c in text)
-            {
-                if (char.IsWhiteSpace(c)){
-                    int i = text.IndexOf(c);
-                    command = text[..i].Trim();
-                    arg = text[i..].Trim();
-                    break;
-                }
-                else
-                {
-                    command = text;
-                }
-            }
-            runshell = Dispatch(command,arg);
+            string[] args = text.Split("");
+            runshell = Dispatch(args);
         }
     }
     static string? FindExecutable(string target)
@@ -51,42 +40,45 @@ class ShellProgram
         }
         return null;
     }
-    static bool Echo(string arg)
+    static bool Echo(string [] commandArgs)
     {
-        Console.WriteLine(arg);
+        Console.WriteLine(string.Join("",commandArgs));
         return true;
     }
 
-    static bool GetType(string arg)
+    static bool GetType(string [] commandArgs)
     {
-        if (builtins.Contains(arg))
+        string typeArg = commandArgs[1];
+        if (builtins.Contains(typeArg))
         {
-            Console.WriteLine(arg + " is a shell builtin");
+            Console.WriteLine(typeArg + " is a shell builtin");
         }
         else
         {
-            string? executable = FindExecutable(arg);
+            string? executable = FindExecutable(typeArg);
             if(executable !=null)
-            Console.WriteLine($"{arg} is {executable}");
+            Console.WriteLine($"{typeArg} is {executable}");
             else
-            Console.WriteLine($"{arg}: not found");
+            Console.WriteLine($"{typeArg}: not found");
         }
         return true;
     }
-    static bool Dispatch(string command, string arg)
-    {
+    static bool Dispatch(string [] args)
+    {   
+        string command = args[0];
+        string [] commandArgs = args[1..];
         if(command == "exit")
         {
             return false;
         }
         if (command == "echo")
         {
-            Echo(arg);
+            Echo(commandArgs);
             return true;
         } 
         if (command == "type")
         {
-            GetType(arg);
+            GetType(commandArgs);
             return true;
         }
         else
