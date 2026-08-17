@@ -13,7 +13,7 @@ class ShellProgram
         {
             Console.Write("$ ");
             string text = Console.ReadLine().Trim();
-            string[] args = text.Split("");
+            string[] args = text.Split(" ");
             runshell = Dispatch(args);
         }
     }
@@ -49,7 +49,7 @@ class ShellProgram
 
     static void GetType(string [] commandArgs)
     {
-        string typeArg = commandArgs[1];
+        string typeArg = commandArgs[0];
         if (builtins.Contains(typeArg))
         {
             Console.WriteLine(typeArg + " is a shell builtin");
@@ -69,7 +69,7 @@ class ShellProgram
     {
         string? executable = FindExecutable(command);
         if(executable != null)
-            Process.Start(command, commandArgs[1..]).WaitForExit();
+            Process.Start(command, commandArgs).WaitForExit();
         else
             Console.WriteLine($"{command}: command not found");
         return;
