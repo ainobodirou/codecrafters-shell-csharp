@@ -47,9 +47,9 @@ class ShellProgram
         return;
     }
 
-    static void HandleCd(string command, string absPath)
+    static void HandleCd(string absPath)
     {
-        if (command == "~")
+        if (absPath == "~")
         {
             try
             {
@@ -101,7 +101,7 @@ class ShellProgram
         return;
     }
 
-    static void Execute(string command,string [] commandArgs)
+    static void Execute(string command, string [] commandArgs)
     {
         string? executable = FindExecutable(command);
         if(executable != null)
@@ -134,9 +134,9 @@ class ShellProgram
             Console.WriteLine(workingDirectory); 
             return true;
         }
-        if (command == "cd" || command == "~")
+        if (command == "cd")
         {
-            HandleCd(command, commandArgs[0]);
+            HandleCd(commandArgs[0]);
             return true;
         }
         else
