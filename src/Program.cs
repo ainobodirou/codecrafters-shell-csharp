@@ -4,7 +4,7 @@ using System.Reflection.Metadata.Ecma335;
 
 class ShellProgram
 {
-    public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd"};
+    public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd", "cd"};
 
     public static bool runshell = true;
     static void Main()
