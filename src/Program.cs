@@ -47,15 +47,38 @@ class ShellProgram
         return;
     }
 
-    static void HandleCd(string absPath)
+    static void HandleCd(string command, string absPath)
     {
-        if(Directory.Exists(absPath))
+        if (command == "~")
         {
-            Environment.CurrentDirectory = absPath;
+            try
+            {
+                string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if (string.IsNullOrWhiteSpace(homeDir))
+                {
+                    homeDir = Environment.GetEnvironmentVariable("HOME")
+                            ?? Environment.GetEnvironmentVariable("USERPROFILE")
+                            ?? throw new Exception("UNable to determine HOME directory");
+                }
+                Environment.CurrentDirectory = homeDir;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
         }
         else
         {
-            Console.WriteLine($"cd: {absPath}: No such file or directory");
+            if(Directory.Exists(absPath))
+            {
+                Environment.CurrentDirectory = absPath;
+            }
+            else
+            {
+                Console.WriteLine($"cd: {absPath}: No such file or directory");
+            }
         }
         return;
     }
@@ -111,9 +134,9 @@ class ShellProgram
             Console.WriteLine(workingDirectory); 
             return true;
         }
-        if (command == "cd")
+        if (command == "cd" || command == "~")
         {
-            HandleCd(commandArgs[0]);
+            HandleCd(command, commandArgs[0]);
             return true;
         }
         else
