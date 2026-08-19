@@ -115,11 +115,13 @@ class ShellProgram
 
         string command = args[0];
         string [] commandArgs = args[1..];
-        if (commandArgs.Contains("'"))
-        {
-            commandArgs.Trim("'");
-        }
+        string searchChar = "'";
         
+        if (commandArgs.Contains(searchChar))
+        {
+            commandArgs.Trim(searchChar);
+        }
+
         if(command == "exit")
         {
             return false;
