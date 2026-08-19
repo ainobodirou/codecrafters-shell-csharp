@@ -117,9 +117,12 @@ class ShellProgram
         string [] commandArgs = args[1..];
         string searchChar = "'";
         
-        if (commandArgs.Contains(searchChar))
+        foreach (var arg in commandArgs)
         {
-            commandArgs.Trim(searchChar);
+            if (arg.Contains(searchChar))
+            {
+                arg.Trim(searchChar);
+            }
         }
 
         if(command == "exit")
