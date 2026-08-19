@@ -112,8 +112,14 @@ class ShellProgram
     }
     static bool Dispatch(string [] args)
     {   
+
         string command = args[0];
         string [] commandArgs = args[1..];
+        if (commandArgs.Contains("'"))
+        {
+            commandArgs.Trim("'");
+        }
+        
         if(command == "exit")
         {
             return false;
