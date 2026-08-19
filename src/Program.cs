@@ -29,12 +29,17 @@ class ShellProgram
                     curr = "";
                     continue;
                 }
+                else
+                {
+                    curr += item;
+                }
             }
             else
             {
                 curr += item;
             }
         }
+        args.Add(curr);
         return args.ToArray();
     }
     static void Main()
@@ -145,15 +150,7 @@ class ShellProgram
 
         string command = args[0];
         string [] commandArgs = args[1..];
-        string searchChar = "'";
         
-        foreach (var arg in commandArgs)
-        {
-            if (arg.Contains(searchChar))
-            {
-                arg.Trim(searchChar);
-            }
-        }
 
         if(command == "exit")
         {
