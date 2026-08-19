@@ -27,13 +27,13 @@ class ShellProgram
                 {
                     args.Add(curr);
                     curr = "";
-                }
-                else
-                {
-                    curr += item;
+                    continue;
                 }
             }
-            curr += item;
+            else
+            {
+                curr += item;
+            }
         }
         return args.ToArray();
     }
