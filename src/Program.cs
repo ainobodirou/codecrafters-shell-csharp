@@ -18,7 +18,8 @@ class ShellProgram
         {
             if (item == '\'')
             {
-               quote = !quote; 
+               quote = !quote;
+               continue;
             }
             if (char.IsWhiteSpace(item))
             {
@@ -29,10 +30,10 @@ class ShellProgram
                 }
                 else
                 {
-                    curr = curr+item;
+                    curr += item;
                 }
             }
-            curr = curr+item;
+            curr += item;
         }
         return args.ToArray();
     }
