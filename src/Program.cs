@@ -13,6 +13,7 @@ class ShellProgram
         List<string> args = new List<string>();
         string curr = "";
         bool quote = false;
+        bool finished = false;
 
         foreach (var item in userInput)
         {
@@ -25,13 +26,21 @@ class ShellProgram
             {
                 if (!quote)
                 {
-                    args.Add(curr);
-                    curr = "";
-                    continue;
+                    if (!finished)
+                    {
+                        args.Add(curr);
+                        finished = true;
+                        continue; 
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
                 else
                 {
                     curr += item;
+                    finished = !finished;
                 }
             }
             else
