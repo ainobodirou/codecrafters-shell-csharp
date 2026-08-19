@@ -1,19 +1,48 @@
 using System.Data;
 using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 
 class ShellProgram
 {
     public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd", "cd"};
-
     public static bool runshell = true;
+
+    static string[] ParseInput(string userInput)
+    {
+        List<string> args = new List<string>();
+        string curr = "";
+        bool quote = false;
+
+        foreach (var item in userInput)
+        {
+            if (item == '\'')
+            {
+               quote = !quote; 
+            }
+            if (char.IsWhiteSpace(item))
+            {
+                if (!quote)
+                {
+                    args.Add(curr);
+                    curr = "";
+                }
+                else
+                {
+                    curr = curr+item;
+                }
+            }
+            curr = curr+item;
+        }
+        return args.ToArray();
+    }
     static void Main()
     {
          while (runshell is true)
         {
             Console.Write("$ ");
             string text = Console.ReadLine().Trim();
-            string[] args = text.Split(" ");
+            string[] args = ParseInput(text);
             runshell = Dispatch(args);
         }
     }
