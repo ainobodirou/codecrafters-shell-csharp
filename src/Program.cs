@@ -47,6 +47,19 @@ class ShellProgram
         return;
     }
 
+    static void HandleCd(string absPath)
+    {
+        if(Directory.Exists(absPath))
+        {
+            Environment.CurrentDirectory = absPath;
+        }
+        else
+        {
+            Console.WriteLine($"cd: {absPath}: No such file or directory");
+        }
+        return;
+    }
+
     static void GetType(string [] commandArgs)
     {
         string typeArg = commandArgs[0];
@@ -98,10 +111,23 @@ class ShellProgram
             Console.WriteLine(workingDirectory); 
             return true;
         }
+        if (command == "cd")
+        {
+            HandleCd(commandArgs[0]);
+            return true;
+        }
         else
         {
             Execute(command, commandArgs);
             return true;
         }
     }
-}
+
+    //implementing the cd builtin
+    // include the cd builtin in the builtins collection
+    //implement the cd method that:
+    // handles absolute paths like /usr/local/bin
+    // handles relative paths like ./, ../, ./dir
+    // the ~ character which represents home directory
+
+}  
