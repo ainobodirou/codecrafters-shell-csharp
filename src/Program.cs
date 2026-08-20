@@ -37,7 +37,7 @@ class ShellProgram
             
             if (char.IsWhiteSpace(item))
             {
-                if (!quote)
+                if (!quote && !dquote)
                 {
                     if (curr.Length > 0){
                         args.Add(curr);
