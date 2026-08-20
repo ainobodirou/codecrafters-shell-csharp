@@ -25,6 +25,7 @@ class ShellProgram
             if (item == '\"')
             {
                 dquote = !dquote;
+                continue;
             }
             
             if (char.IsWhiteSpace(item))
