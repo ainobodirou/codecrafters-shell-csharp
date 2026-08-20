@@ -19,14 +19,10 @@ class ShellProgram
         {
             if (item == '\'')
             {
-                if (dquote!)
+                if (!dquote)
                 {
                     quote =!quote;
                     continue;
-                }
-                else
-                {
-                    curr+=item;
                 }
             }
             if (item == '\"')
