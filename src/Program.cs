@@ -13,6 +13,7 @@ class ShellProgram
         List<string> args = new List<string>();
         string curr = "";
         bool quote = false;
+        bool dquote = false;
 
         foreach (var item in userInput)
         {
@@ -21,9 +22,14 @@ class ShellProgram
                quote = !quote;
                continue;
             }
+            if (item == '\"')
+            {
+                dquote = !dquote;
+            }
+            
             if (char.IsWhiteSpace(item))
             {
-                if (!quote)
+                if (!quote && !dquote)
                 {
                     if (curr.Length > 0){
                         args.Add(curr);
