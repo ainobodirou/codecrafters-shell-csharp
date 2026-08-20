@@ -19,8 +19,15 @@ class ShellProgram
         {
             if (item == '\'')
             {
-               quote = !quote;
-               continue;
+                if (dquote!)
+                {
+                    quote =!quote;
+                    continue;
+                }
+                else
+                {
+                    curr+=item;
+                }
             }
             if (item == '\"')
             {
@@ -30,7 +37,7 @@ class ShellProgram
             
             if (char.IsWhiteSpace(item))
             {
-                if (!quote && !dquote)
+                if (!quote)
                 {
                     if (curr.Length > 0){
                         args.Add(curr);
