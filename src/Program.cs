@@ -36,18 +36,19 @@ class ShellProgram
                 dquote = !dquote;
                 continue;
             }
+            if (bcklash)
+            {
+                curr+= item;
+                bcklash = !bcklash;
+                continue;
+            }
             
             if (char.IsWhiteSpace(item))
             {
+          
                 if (!quote && !dquote)
                 {
-                    if (curr.Length>0 && bcklash)
-                    {
-                        curr += item;
-                        bcklash = !bcklash;
-                        continue;
-                    }
-                    else
+                    if (curr.Length>0)
                     {
                         args.Add(curr);
                         curr = "";
