@@ -14,6 +14,7 @@ class ShellProgram
         string curr = "";
         bool quote = false;
         bool dquote = false;
+        bool bcklash = false;
 
         foreach (var item in userInput)
         {
@@ -23,6 +24,19 @@ class ShellProgram
                 {
                     quote =!quote;
                     continue;
+                }
+            }
+            if (item == '\\')
+            {
+                bcklash = !bcklash;
+                if (bcklash is true)
+                {
+                    bcklash =!bcklash;
+                    continue;
+                }
+                else
+                {
+                    
                 }
             }
             if (item == '\"')
