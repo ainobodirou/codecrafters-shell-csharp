@@ -43,9 +43,8 @@ class ShellProgram
                 {
                     if (curr.Length>0 && bcklash)
                     {
-                        args.Add(curr);
-                        curr = "";
                         curr += item;
+                        bcklash = !bcklash;
                         continue;
                     }
                     else
