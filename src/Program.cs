@@ -41,16 +41,19 @@ class ShellProgram
             {
                 if (!quote && !dquote)
                 {
-                    if (curr.Length > 0){
+                    if (!bcklash && curr.Length>0)
+                    {
                         args.Add(curr);
                         curr = "";
+                        continue;
                     }
-                    if (bcklash)
+                    else if (curr.Length>0)
                     {
+                        args.Add(curr);
+                        curr = "";
                         curr += item;
-                        bcklash = !bcklash;
+                        continue;
                     }
-                    continue;
                 }
         
                 else
