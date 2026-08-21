@@ -18,6 +18,12 @@ class ShellProgram
 
         foreach (var item in userInput)
         {
+            if (bcklash)
+            {
+                curr+= item;
+                bcklash = !bcklash;
+                continue;
+            }
             if (item == '\'')
             {
                 if (!dquote)
@@ -34,12 +40,6 @@ class ShellProgram
             if (item == '\"')
             {
                 dquote = !dquote;
-                continue;
-            }
-            if (bcklash)
-            {
-                curr+= item;
-                bcklash = !bcklash;
                 continue;
             }
             
