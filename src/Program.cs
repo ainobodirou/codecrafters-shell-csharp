@@ -48,6 +48,7 @@ class ShellProgram
                     if (bcklash)
                     {
                         curr += item;
+                        bcklash = !bcklash;
                     }
                     continue;
                 }
