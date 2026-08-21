@@ -29,15 +29,7 @@ class ShellProgram
             if (item == '\\')
             {
                 bcklash = !bcklash;
-                if (bcklash is true)
-                {
-                    bcklash =!bcklash;
-                    continue;
-                }
-                else
-                {
-                    
-                }
+                continue;
             }
             if (item == '\"')
             {
@@ -52,9 +44,14 @@ class ShellProgram
                     if (curr.Length > 0){
                         args.Add(curr);
                         curr = "";
-                        continue;
                     }
+                    if (bcklash)
+                    {
+                        curr += item;
+                    }
+                    continue;
                 }
+        
                 else
                 {
                     curr += item;
