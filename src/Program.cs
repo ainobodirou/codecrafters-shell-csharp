@@ -32,12 +32,12 @@ class ShellProgram
                     continue;
                 }
             }
-            if (item == '\\')
+            if (item == '\\' && !quote)
             {
                 bcklash = !bcklash;
                 continue;
             }
-            if (item == '\"' && quote)
+            if (item == '\"' && !quote)
             {
                 dquote = !dquote;
                 continue;
