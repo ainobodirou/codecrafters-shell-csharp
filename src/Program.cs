@@ -35,7 +35,15 @@ class ShellProgram
             if (item == '\\')
             {
                 bcklash = !bcklash;
-                continue;
+                if (quote)
+                {
+                    args.Add(curr);
+                    continue;
+                }
+                else
+                {
+                    continue;
+                } 
             }
             if (item == '\"')
             {
