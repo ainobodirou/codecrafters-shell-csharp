@@ -63,7 +63,15 @@ class ShellProgram
                     }
                     if (character == '>')
                     {
+                        if (curr == "1")
+                        {
+                            curr = "";
+                            argumentStarted = false;
+                        }
+                        else
+                        {
                         FinishArgument();
+                        }
                         outputTarget = true;
                         continue;
                     }
