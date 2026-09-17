@@ -254,7 +254,7 @@ class ShellProgram
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = executable,
+            FileName = command,
             UseShellExecute = false,
             RedirectStandardOutput = true
         };
