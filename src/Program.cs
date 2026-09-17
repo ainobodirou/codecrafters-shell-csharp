@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Authentication;
+using Microsoft.VisualBasic;
 
 class ShellProgram
 {
@@ -14,34 +15,53 @@ class ShellProgram
         DoubleQuoted
     }
 
-    static string[] ParseInput(string userInput)
+    static (string[] Args, string? OutputPath) ParseInput(string userInput)
     {
         List<string> args = new List<string>();
         ParseMode mode = ParseMode.Unquoted;
         string curr = "";
+        string redirect = null;
         bool argumentStarted = false;
         bool escapeNextCharacter = false;
+        bool outputTarget = false;
+    
+
+        
 
         void FinishArgument()
         {
-            if (argumentStarted)
+           
+            if (outputTarget)
+            {
+                redirect += curr;
+                outputTarget = false;
+            }
+            else
             {
                 args.Add(curr);
-                curr = "";
-                argumentStarted = false;
             }
-        }
+            curr = "";
+            argumentStarted = false;
+            }
+
         
         foreach (char character in userInput)
         {
             switch (mode)
             {
                 case ParseMode.Unquoted:
+
                     if (escapeNextCharacter)
                     {
                         argumentStarted = true;
                         curr += character;
                         escapeNextCharacter = false;
+                        continue;
+                    }
+                    if (character == '>')
+                    {
+                        FinishArgument();
+                        outputTarget = true;
                         continue;
                     }
                     if (character == '\'')
@@ -111,7 +131,7 @@ class ShellProgram
             }
         }
         FinishArgument();
-        return args.ToArray();
+        return (args.ToArray(), redirect);
     }
 
     static void Main()
@@ -120,8 +140,10 @@ class ShellProgram
         {
             Console.Write("$ ");
             string text = Console.ReadLine().Trim();
-            string[] args = ParseInput(text);
-            runshell = Dispatch(args);
+            var parsed  = ParseInput(text);
+            string[] args = parsed.Args;
+            string? outputPath = parsed.OutputPath; 
+            runshell = Dispatch(args, outputPath);
         }
     }
     static string? FindExecutable(string target)
@@ -148,13 +170,14 @@ class ShellProgram
         }
         return null;
     }
-    static void Echo(string [] commandArgs)
+    static void Echo(string [] commandArgs, TextWriter output)
     {
-        Console.WriteLine(string.Join(" ",commandArgs));
+        output.WriteLine(string.Join(" ",commandArgs));
         return;
     }
 
-    static void HandleCd(string absPath)
+
+    static void HandleCd(string absPath, TextWriter output)
     {
         if (absPath == "~")
         {
@@ -172,7 +195,7 @@ class ShellProgram
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                output.WriteLine("Error: " + ex.Message);
             }
 
         }
@@ -184,75 +207,110 @@ class ShellProgram
             }
             else
             {
-                Console.WriteLine($"cd: {absPath}: No such file or directory");
+                output.WriteLine($"cd: {absPath}: No such file or directory");
             }
         }
         return;
     }
 
-    static void GetType(string [] commandArgs)
+    static void GetType(string [] commandArgs, TextWriter output)
     {
         string typeArg = commandArgs[0];
         if (builtins.Contains(typeArg))
         {
-            Console.WriteLine(typeArg + " is a shell builtin");
+            output.WriteLine(typeArg + " is a shell builtin");
         }
         else
         {
             string? executable = FindExecutable(typeArg);
             if(executable !=null)
-            Console.WriteLine($"{typeArg} is {executable}");
+            output.WriteLine($"{typeArg} is {executable}");
             else
-            Console.WriteLine($"{typeArg}: not found");
+            output.WriteLine($"{typeArg}: not found");
         }
         return;
     }
 
-    static void Execute(string command, string [] commandArgs)
+    static void Execute(string command, string [] commandArgs, TextWriter output)
     {
         string? executable = FindExecutable(command);
-        if(executable != null)
-            Process.Start(command, commandArgs).WaitForExit();
-        else
-            Console.WriteLine($"{command}: command not found");
-        return;
+
+        if (executable is null)
+        {
+            Console.Error.WriteLine($"{command}: command not found");
+            return;
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = executable,
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        };
+        foreach (string argument in commandArgs)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+        using var process = new Process
+        {
+            StartInfo = startInfo
+        };
+        
+        process.Start();
+        string capturedOut = process.StandardOutput.ReadToEnd();
+        output.Write(capturedOut);
+        process.WaitForExit();
     }
-    static bool Dispatch(string [] args)
+    static bool Dispatch(string [] args, string? outputPath)
     {   
 
-        string command = args[0];
+        string command = args[0]; 
         string [] commandArgs = args[1..];
-        
+        TextWriter output = Console.Out;
+        StreamWriter? fileWriter = null;
 
-        if(command == "exit")
+        try
         {
-            return false;
+            if (outputPath is not null)
+            {
+                fileWriter = new StreamWriter(outputPath, append: false);
+                output = fileWriter;
+            }
+
+            if(command == "exit")
+            {
+                return false;
+            }
+            if (command == "echo")
+            {     
+                Echo(commandArgs, output);
+                return true;
+            } 
+            if (command == "type")
+            {
+                GetType(commandArgs, output);
+                return true;
+            }
+            if (command == "pwd")
+            {
+                string workingDirectory = Environment.CurrentDirectory;
+                output.WriteLine(workingDirectory); 
+                return true;
+            }
+            if (command == "cd")
+            {
+                HandleCd(commandArgs[0], output);
+                return true;
+            }
+            else
+            {
+                Execute(command, commandArgs, output);
+                return true;
+            }     
         }
-        if (command == "echo")
+        finally
         {
-            Echo(commandArgs);
-            return true;
-        } 
-        if (command == "type")
-        {
-            GetType(commandArgs);
-            return true;
-        }
-        if (command == "pwd")
-        {
-            string workingDirectory = Environment.CurrentDirectory;
-            Console.WriteLine(workingDirectory); 
-            return true;
-        }
-        if (command == "cd")
-        {
-            HandleCd(commandArgs[0]);
-            return true;
-        }
-        else
-        {
-            Execute(command, commandArgs);
-            return true;
+            fileWriter?.Dispose();
         }
     }
     }
