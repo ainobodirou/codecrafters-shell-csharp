@@ -1,73 +1,119 @@
-using System.Data;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 
 class ShellProgram
 {
     public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd", "cd"};
     public static bool runshell = true;
 
+
+        enum ParseMode
+    {
+        Unquoted,
+        SingleQuoted,
+        DoubleQuoted
+    }
+
     static string[] ParseInput(string userInput)
     {
         List<string> args = new List<string>();
+        ParseMode mode = ParseMode.Unquoted;
         string curr = "";
-        bool quote = false;
-        bool dquote = false;
-        bool bcklash = false;
+        bool argumentStarted = false;
+        bool escapeNextCharacter = false;
 
-        foreach (var item in userInput)
+        void FinishArgument()
         {
-            if (bcklash)
+            if (argumentStarted)
             {
-                curr+= item;
-                bcklash = !bcklash;
-                continue;
-            }
-            if (item == '\'')
-            {
-                if (!dquote)
-                {
-                    quote =!quote;
-                    continue;
-                }
-            }
-            if (item == '\\' && !quote)
-            {
-                bcklash = !bcklash;
-                continue;
-            }
-            if (item == '\"' && !quote)
-            {
-                dquote = !dquote;
-                continue;
-            }
-            
-            if (char.IsWhiteSpace(item))
-            {
-          
-                if (!quote && !dquote)
-                {
-                    if (curr.Length>0)
-                    {
-                        args.Add(curr);
-                        curr = "";
-                        continue;
-                    }
-                }
-                else
-                {
-                    curr += item;
-                }
-            }
-            else
-            {
-                curr += item;
+                args.Add(curr);
+                curr = "";
+                argumentStarted = false;
             }
         }
-        args.Add(curr);
+        
+        foreach (char character in userInput)
+        {
+            switch (mode)
+            {
+                case ParseMode.Unquoted:
+                    if (escapeNextCharacter)
+                    {
+                        argumentStarted = true;
+                        curr += character;
+                        escapeNextCharacter = false;
+                        continue;
+                    }
+                    if (character == '\'')
+                    {
+                        argumentStarted = true;
+                        mode = ParseMode.SingleQuoted;
+                    }
+                    else if (character == '"')
+                    {
+                        argumentStarted = true;
+                        mode = ParseMode.DoubleQuoted;
+                    }
+                    else if (char.IsWhiteSpace(character))
+                    {
+                        FinishArgument();
+                    }
+                    else if (character == '\\')
+                    {
+                        escapeNextCharacter = true;
+                        continue;
+                    }
+                    else
+                    {
+                        argumentStarted = true;
+                        curr += character;
+                    }
+                    break;
+                case ParseMode.SingleQuoted:
+                    if (character == '\'')
+                    {
+                        mode = ParseMode.Unquoted;
+                    }
+                    else
+                    {
+                        curr += character;
+                    }
+                    break;
+                case ParseMode.DoubleQuoted:
+
+                    if (escapeNextCharacter)
+                    {
+                        if (character is '"' or '\\' or '$' or '`')
+                        {
+                            curr += character;
+                        }
+                        else
+                            {
+                                curr += '\\';
+                                curr += character;
+                            }
+                            escapeNextCharacter = false;
+                        }
+                    
+                    else if (character == '\\')
+                    {
+                        escapeNextCharacter = true;
+                    }
+                    else if (character == '"')
+                    {
+                        mode = ParseMode.Unquoted;
+                    }
+                    else
+                    {
+                        curr += character;
+                    }
+                    break;          
+            }
+        }
+        FinishArgument();
         return args.ToArray();
     }
+
     static void Main()
     {
          while (runshell is true)
@@ -209,6 +255,8 @@ class ShellProgram
             return true;
         }
     }
+    }
+
 
     //implementing the cd builtin
     // include the cd builtin in the builtins collection
@@ -217,4 +265,3 @@ class ShellProgram
     // handles relative paths like ./, ../, ./dir
     // the ~ character which represents home directory
 
-}  
