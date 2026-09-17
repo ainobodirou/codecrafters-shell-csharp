@@ -20,7 +20,7 @@ class ShellProgram
         List<string> args = new List<string>();
         ParseMode mode = ParseMode.Unquoted;
         string curr = "";
-        string redirect = null;
+        string? redirect = null;
         bool argumentStarted = false;
         bool escapeNextCharacter = false;
         bool outputTarget = false;
@@ -30,7 +30,10 @@ class ShellProgram
 
         void FinishArgument()
         {
-           
+           if (!argumentStarted)
+            {
+                return;
+            }
             if (outputTarget)
             {
                 redirect += curr;
@@ -255,7 +258,7 @@ class ShellProgram
         {
             StartInfo = startInfo
         };
-        
+
         process.Start();
         string capturedOut = process.StandardOutput.ReadToEnd();
         output.Write(capturedOut);
