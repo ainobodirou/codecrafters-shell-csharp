@@ -15,13 +15,15 @@ class ShellProgram
         DoubleQuoted
     }
 
-    static (string[] Args, string? OutputPath) ParseInput(string userInput)
+    static (string[] Args, string? OutputPath, string? RedirectPath) ParseInput(string userInput)
     {
         List<string> args = new List<string>();
         ParseMode mode = ParseMode.Unquoted;
         string curr = "";
         string? redirect = null;
+        string? redirect_error = null;
         bool argumentStarted = false;
+        bool stderrPath = false;
         bool escapeNextCharacter = false;
         bool outputTarget = false;
     
@@ -38,6 +40,11 @@ class ShellProgram
             {
                 redirect += curr;
                 outputTarget = false;
+            }
+            if (stderrPath)
+            {
+                redirect_error += curr;
+                stderrPath = false;
             }
             else
             {
@@ -67,6 +74,12 @@ class ShellProgram
                         {
                             curr = "";
                             argumentStarted = false;
+                        }
+                        if (curr == "2")
+                        {
+                            curr ="2>";
+                            argumentStarted = false;
+                            stderrPath = true;
                         }
                         else
                         {
@@ -142,7 +155,7 @@ class ShellProgram
             }
         }
         FinishArgument();
-        return (args.ToArray(), redirect);
+        return (args.ToArray(), redirect, redirect_error);
     }
 
     static void Main()
@@ -154,7 +167,8 @@ class ShellProgram
             var parsed  = ParseInput(text);
             string[] args = parsed.Args;
             string? outputPath = parsed.OutputPath; 
-            runshell = Dispatch(args, outputPath);
+            string? redirectPath = parsed.RedirectPath;
+            runshell = Dispatch(args, outputPath, redirectPath);
         }
     }
     static string? FindExecutable(string target)
@@ -181,14 +195,14 @@ class ShellProgram
         }
         return null;
     }
-    static void Echo(string [] commandArgs, TextWriter output)
+    static void Echo(string [] commandArgs, TextWriter output, TextWriter error)
     {
         output.WriteLine(string.Join(" ",commandArgs));
         return;
     }
 
 
-    static void HandleCd(string absPath, TextWriter output)
+    static void HandleCd(string absPath, TextWriter output, TextWriter error)
     {
         if (absPath == "~")
         {
@@ -199,14 +213,14 @@ class ShellProgram
                 {
                     homeDir = Environment.GetEnvironmentVariable("HOME")
                             ?? Environment.GetEnvironmentVariable("USERPROFILE")
-                            ?? throw new Exception("UNable to determine HOME directory");
+                            ?? throw new Exception("Unable to determine HOME directory");
                 }
                 Environment.CurrentDirectory = homeDir;
 
             }
             catch (Exception ex)
             {
-                output.WriteLine("Error: " + ex.Message);
+                error.WriteLine("Error: " + ex.Message);
             }
 
         }
@@ -218,13 +232,13 @@ class ShellProgram
             }
             else
             {
-                output.WriteLine($"cd: {absPath}: No such file or directory");
+                error.WriteLine($"cd: {absPath}: No such file or directory");
             }
         }
         return;
     }
 
-    static void GetType(string [] commandArgs, TextWriter output)
+    static void GetType(string [] commandArgs, TextWriter output, TextWriter error)
     {
         string typeArg = commandArgs[0];
         if (builtins.Contains(typeArg))
@@ -237,18 +251,18 @@ class ShellProgram
             if(executable !=null)
             output.WriteLine($"{typeArg} is {executable}");
             else
-            output.WriteLine($"{typeArg}: not found");
+            error.WriteLine($"{typeArg}: not found");
         }
         return;
     }
 
-    static void Execute(string command, string [] commandArgs, TextWriter output)
+    static void Execute(string command, string [] commandArgs, TextWriter output, TextWriter error)
     {
         string? executable = FindExecutable(command);
 
         if (executable is null)
         {
-            Console.Error.WriteLine($"{command}: command not found");
+            error.WriteLine($"{command}: command not found");
             return;
         }
 
@@ -268,24 +282,39 @@ class ShellProgram
         };
 
         process.Start();
-        string capturedOut = process.StandardOutput.ReadToEnd();
-        output.Write(capturedOut);
+
+        Task<string> outputTask =
+            process.StandardOutput.ReadToEndAsync();
+
+        Task<string> errorTask = 
+            process.StandardError.ReadToEndAsync();
+        
         process.WaitForExit();
+
+        string capturedOut = outputTask.GetAwaiter().GetResult();
+        string capturedError = errorTask.GetAwaiter().GetResult();
+
+        output.Write(capturedError);
+        error.Write(capturedError);
     }
-    static bool Dispatch(string [] args, string? outputPath)
+    static bool Dispatch(string [] args, string? outputPath, string? stderrPath)
     {   
 
         string command = args[0]; 
         string [] commandArgs = args[1..];
         TextWriter output = Console.Out;
+        TextWriter error = Console.Error;
         StreamWriter? fileWriter = null;
+        StreamWriter? errorWriter = null;
 
         try
         {
             if (outputPath is not null)
             {
                 fileWriter = new StreamWriter(outputPath, append: false);
+                errorWriter = new StreamWriter(stderrPath, append: false)
                 output = fileWriter;
+                error = errorWriter;
             }
 
             if(command == "exit")
@@ -294,12 +323,12 @@ class ShellProgram
             }
             if (command == "echo")
             {     
-                Echo(commandArgs, output);
+                Echo(commandArgs, output, error) ;
                 return true;
             } 
             if (command == "type")
             {
-                GetType(commandArgs, output);
+                GetType(commandArgs, output, error);
                 return true;
             }
             if (command == "pwd")
