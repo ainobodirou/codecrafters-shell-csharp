@@ -15,17 +15,23 @@ class ShellProgram
         DoubleQuoted
     }
 
-    static (string[] Args, string? OutputPath, string? RedirectPath) ParseInput(string userInput)
+        enum outputPathTarget
+    {
+        None,
+        StandardOutput,
+        StandardError
+    }
+
+    static (string[] Args, string? OutputPath, string? outputPathPath) ParseInput(string userInput)
     {
         List<string> args = new List<string>();
         ParseMode mode = ParseMode.Unquoted;
         string curr = "";
-        string? redirect = null;
-        string? redirect_error = null;
+        string? outputPath = null;
+        string? errorPath = null;
         bool argumentStarted = false;
-        bool stderrPath = false;
         bool escapeNextCharacter = false;
-        bool outputTarget = false;
+        outputPathTarget pendingoutputPath = outputPathTarget.None;
     
 
         
@@ -36,15 +42,13 @@ class ShellProgram
             {
                 return;
             }
-            if (outputTarget)
+            if (pendingoutputPath == outputPathTarget.StandardOutput)
             {
-                redirect += curr;
-                outputTarget = false;
+                outputPath = curr;
             }
-            if (stderrPath)
+            else if (pendingoutputPath == outputPathTarget.StandardError)
             {
-                redirect_error += curr;
-                stderrPath = false;
+                errorPath = curr;
             }
             else
             {
@@ -52,6 +56,7 @@ class ShellProgram
             }
             curr = "";
             argumentStarted = false;
+            pendingoutputPath = outputPathTarget.None;
             }
 
         
@@ -77,15 +82,15 @@ class ShellProgram
                         }
                         if (curr == "2")
                         {
-                            curr ="2>";
+                            curr ="";
                             argumentStarted = false;
-                            stderrPath = true;
+                            pendingoutputPath = outputPathTarget.StandardError;
                         }
                         else
                         {
                         FinishArgument();
+                        pendingoutputPath = outputPathTarget.StandardOutput;
                         }
-                        outputTarget = true;
                         continue;
                     }
                     if (character == '\'')
@@ -155,7 +160,7 @@ class ShellProgram
             }
         }
         FinishArgument();
-        return (args.ToArray(), redirect, redirect_error);
+        return (args.ToArray(), outputPath, errorPath);
     }
 
     static void Main()
@@ -167,8 +172,8 @@ class ShellProgram
             var parsed  = ParseInput(text);
             string[] args = parsed.Args;
             string? outputPath = parsed.OutputPath; 
-            string? redirectPath = parsed.RedirectPath;
-            runshell = Dispatch(args, outputPath, redirectPath);
+            string? outputPathPath = parsed.outputPathPath;
+            runshell = Dispatch(args, outputPath, outputPathPath);
         }
     }
     static string? FindExecutable(string target)
@@ -270,7 +275,8 @@ class ShellProgram
         {
             FileName = command,
             UseShellExecute = false,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
         foreach (string argument in commandArgs)
         {
@@ -294,10 +300,10 @@ class ShellProgram
         string capturedOut = outputTask.GetAwaiter().GetResult();
         string capturedError = errorTask.GetAwaiter().GetResult();
 
-        output.Write(capturedError);
+        output.Write(capturedOut);
         error.Write(capturedError);
     }
-    static bool Dispatch(string [] args, string? outputPath, string? stderrPath)
+    static bool Dispatch(string [] args, string? outputPath, string? errorPath)
     {   
 
         string command = args[0]; 
@@ -309,14 +315,17 @@ class ShellProgram
 
         try
         {
-            if (outputPath is not null)
+            if (outputPath is not null )
             {
                 fileWriter = new StreamWriter(outputPath, append: false);
-                errorWriter = new StreamWriter(stderrPath, append: false)
                 output = fileWriter;
+                
+            }
+            if (errorPath is not null)
+            {
+                errorWriter = new StreamWriter(errorPath, append: false);
                 error = errorWriter;
             }
-
             if(command == "exit")
             {
                 return false;
@@ -351,6 +360,7 @@ class ShellProgram
         finally
         {
             fileWriter?.Dispose();
+            errorWriter?.Dispose();
         }
     }
     }
