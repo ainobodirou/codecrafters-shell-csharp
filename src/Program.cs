@@ -339,12 +339,12 @@ class ShellProgram
             }
             if (command == "cd")
             {
-                HandleCd(commandArgs[0], output);
+                HandleCd(commandArgs[0], output, error);
                 return true;
             }
             else
             {
-                Execute(command, commandArgs, output);
+                Execute(command, commandArgs, output, error);
                 return true;
             }     
         }
