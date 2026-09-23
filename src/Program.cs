@@ -1,7 +1,4 @@
 using System.Diagnostics;
-using System.Security.Authentication;
-using Microsoft.VisualBasic;
-
 class ShellProgram
 {
     public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd", "cd"};
@@ -22,7 +19,13 @@ class ShellProgram
         StandardError
     }
 
-    static (string[] Args, string? OutputPath, string? outputPathPath) ParseInput(string userInput)
+        enum RedirectMode
+    {
+        Overwrite,
+        Append,
+    }
+
+    static (string[] Args, string? OutputPath, string? outputPathPath, RedirectMode outputMode, RedirectMode errorMode) ParseInput(string userInput)
     {
         List<string> args = new List<string>();
         ParseMode mode = ParseMode.Unquoted;
@@ -32,6 +35,9 @@ class ShellProgram
         bool argumentStarted = false;
         bool escapeNextCharacter = false;
         outputPathTarget pendingoutputPath = outputPathTarget.None;
+        RedirectMode outputMode = RedirectMode.Overwrite;
+        RedirectMode errorMode = RedirectMode.Overwrite;
+  
     
 
         
@@ -60,8 +66,9 @@ class ShellProgram
             }
 
         
-        foreach (char character in userInput)
+        for (int i = 0; i < userInput.Length; i++)
         {
+            char character = userInput[i];
             switch (mode)
             {
                 case ParseMode.Unquoted:
@@ -75,21 +82,32 @@ class ShellProgram
                     }
                     if (character == '>')
                     {
+                        bool append = i + 1 < userInput.Length && userInput[i+1] == '>';
+                        if (append)
+                        {
+                            i++;
+                        }
+                        RedirectMode detectedMode = append ? RedirectMode.Append : RedirectMode.Overwrite;
+
                         if (curr == "1")
                         {
                             curr = "";
                             argumentStarted = false;
+                            pendingoutputPath = outputPathTarget.StandardOutput;
+                            outputMode = detectedMode;
                         }
                         if (curr == "2")
                         {
                             curr ="";
                             argumentStarted = false;
                             pendingoutputPath = outputPathTarget.StandardError;
+                            errorMode = detectedMode;
                         }
                         else
                         {
                         FinishArgument();
                         pendingoutputPath = outputPathTarget.StandardOutput;
+                        outputMode = detectedMode;
                         }
                         continue;
                     }
@@ -160,7 +178,7 @@ class ShellProgram
             }
         }
         FinishArgument();
-        return (args.ToArray(), outputPath, errorPath);
+        return (args.ToArray(), outputPath, errorPath, outputMode, errorMode);
     }
 
     static void Main()
@@ -173,7 +191,10 @@ class ShellProgram
             string[] args = parsed.Args;
             string? outputPath = parsed.OutputPath; 
             string? outputPathPath = parsed.outputPathPath;
-            runshell = Dispatch(args, outputPath, outputPathPath);
+            RedirectMode outputMode = parsed.outputMode;
+            RedirectMode errorMode = parsed.errorMode;
+
+            runshell = Dispatch(args, outputPath, outputPathPath, outputMode, errorMode);
         }
     }
     static string? FindExecutable(string target)
@@ -303,7 +324,7 @@ class ShellProgram
         output.Write(capturedOut);
         error.Write(capturedError);
     }
-    static bool Dispatch(string [] args, string? outputPath, string? errorPath)
+    static bool Dispatch(string [] args, string? outputPath, string? errorPath, RedirectMode outputMode, RedirectMode errorMode)
     {   
 
         string command = args[0]; 
@@ -313,17 +334,22 @@ class ShellProgram
         StreamWriter? fileWriter = null;
         StreamWriter? errorWriter = null;
 
-        try
-        {
+        try{
+            bool appendOutput =
+            outputMode == RedirectMode.Append;
+
+            bool appendError =
+            errorMode == RedirectMode.Append;
+    
             if (outputPath is not null )
             {
-                fileWriter = new StreamWriter(outputPath, append: false);
+                fileWriter = new StreamWriter(outputPath, append: appendOutput);
                 output = fileWriter;
                 
             }
             if (errorPath is not null)
             {
-                errorWriter = new StreamWriter(errorPath, append: false);
+                errorWriter = new StreamWriter(errorPath, append: appendError);
                 error = errorWriter;
             }
             if(command == "exit")
