@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 class ShellProgram
 {
     public static List<string> builtins = new List<string> {"exit", "type", "echo", "pwd", "cd"};
@@ -37,10 +38,6 @@ class ShellProgram
         outputPathTarget pendingoutputPath = outputPathTarget.None;
         RedirectMode outputMode = RedirectMode.Overwrite;
         RedirectMode errorMode = RedirectMode.Overwrite;
-  
-    
-
-        
 
         void FinishArgument()
         {
@@ -181,12 +178,65 @@ class ShellProgram
         return (args.ToArray(), outputPath, errorPath, outputMode, errorMode);
     }
 
+    static string ReadCommandLine(Trie commandTrie)
+    {   
+        var buffer = new StringBuilder();
+        while (true)
+        {
+            ConsoleKeyInfo key = Console.ReadKey(intercept: true);
+
+
+            if (key.Key == ConsoleKey.Tab)
+            {
+                string prefix = buffer.ToString();
+                string completion = commandTrie.GetCompletion(prefix);
+                if (completion == "")
+                {
+                    Console.Write('\a');
+                }
+                else
+                {
+                string suffix = completion[prefix.Length..];
+                string inText = suffix + "";
+                buffer.Append(inText);
+                Console.Write(inText);
+            }
+            continue;
+            }
+
+            if (key.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                return buffer.ToString();
+            }
+            else if (key.Key == ConsoleKey.Backspace)
+            {
+                if(buffer.Length > 0)
+                {
+                    buffer.Length--;
+                    Console.Write("\b \b");
+                }
+                continue;
+            }
+            if (!char.IsControl(key.KeyChar))
+            {
+                buffer.Append(key.KeyChar);
+                Console.Write(key.KeyChar);
+            }
+        }
+      
+    }
+
     static void Main()
     {
-         while (runshell is true)
+        Trie commandTrie = new Trie();
+        commandTrie.insert("echo");
+        commandTrie.insert("exit");
+
+         while (runshell)
         {
             Console.Write("$ ");
-            string text = Console.ReadLine().Trim();
+            string text = ReadCommandLine(commandTrie);
             var parsed  = ParseInput(text);
             string[] args = parsed.Args;
             string? outputPath = parsed.OutputPath; 
