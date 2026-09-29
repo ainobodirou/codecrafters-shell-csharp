@@ -197,7 +197,7 @@ class ShellProgram
                 else
                 {
                 string suffix = completion[prefix.Length..];
-                string inText = suffix + "";
+                string inText = suffix + " ";
                 buffer.Append(inText);
                 Console.Write(inText);
             }
