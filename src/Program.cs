@@ -232,6 +232,11 @@ class ShellProgram
         Trie commandTrie = new Trie();
         commandTrie.insert("echo");
         commandTrie.insert("exit");
+        List<string> externExecutables = FindAllExecutables();
+        foreach (string executable in externExecutables)
+        {
+            commandTrie.insert(executable);
+        }
 
          while (runshell)
         {
@@ -271,6 +276,56 @@ class ShellProgram
         }
         return null;
     }
+
+
+    static List<string> FindAllExecutables()
+    {
+        try
+        {
+        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrWhiteSpace(pathEnv))
+        {
+            Console.WriteLine("PATH empty");
+            return [];
+        }
+
+        string[] directories = pathEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+        HashSet<string> foundExecutables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (string dir in directories)
+        {
+            try
+            {
+                string trimmeDir = dir.Trim();
+                if (!Directory.Exists(trimmeDir))
+                {
+                    continue;
+                }
+                foreach (string exeFile in Directory.EnumerateFiles(trimmeDir, "*.exe", SearchOption.TopDirectoryOnly))
+                {
+                    string fileName = Path.GetFileName(exeFile);
+                    foundExecutables.Add(fileName);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Console.WriteLine($"Access denied to: {dir}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading {dir}: {ex.Message}");
+            }
+        }
+        return foundExecutables.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+    
+            
+        
     static void Echo(string [] commandArgs, TextWriter output, TextWriter error)
     {
         output.WriteLine(string.Join(" ",commandArgs));
@@ -442,10 +497,4 @@ class ShellProgram
     }
 
 
-    //implementing the cd builtin
-    // include the cd builtin in the builtins collection
-    //implement the cd method that:
-    // handles absolute paths like /usr/local/bin
-    // handles relative paths like ./, ../, ./dir
-    // the ~ character which represents home directory
-
+ 
