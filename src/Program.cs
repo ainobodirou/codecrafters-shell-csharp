@@ -260,21 +260,33 @@ class ShellProgram
         foreach (var dir in directories)
         {
             var filePath = Path.Combine(dir, target);
-            if (File.Exists(filePath))
+            if (IsExecutable(filePath))
             {
-                var mode = File.GetUnixFileMode(filePath);
-                var executePermissions =
-                UnixFileMode.UserExecute |
-                UnixFileMode.GroupExecute |
-                UnixFileMode.OtherExecute;
-                
-                if((mode & executePermissions) != 0)
-                {
-                    return filePath;
-                }            
+                return filePath;
             }
+            continue;
         }
         return null;
+    }
+
+    static bool IsExecutable(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return false;
+        }
+        if (OperatingSystem.IsWindows())
+        {
+            string pathExt = Environment.GetEnvironmentVariable("PATHNEXT") ?? ".COM;.EXE;.BAT;.CMD";
+            return pathExt
+                .Split(';', StringSplitOptions.RemoveEmptyEntries).Contains(
+                    Path.GetExtension(path),
+                    StringComparer.OrdinalIgnoreCase);
+        }
+        UnixFileMode mode = File.GetUnixFileMode(path);
+        return (mode & (UnixFileMode.UserExecute |
+                        UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherExecute)) != 0;
     }
 
 
@@ -300,11 +312,13 @@ class ShellProgram
                 {
                     continue;
                 }
-                foreach (string exeFile in Directory.EnumerateFiles(trimmeDir, "*.exe", SearchOption.TopDirectoryOnly))
+                foreach (string exeFile in Directory.EnumerateFiles(trimmeDir))
                 {
-                    string fileName = Path.GetFileName(exeFile);
-                    foundExecutables.Add(fileName);
-                    continue;
+                        if (IsExecutable(exeFile))
+                        {
+                            foundExecutables.Add(exeFile);
+                        }
+                        continue;
                 }
             }
             catch (UnauthorizedAccessException)
