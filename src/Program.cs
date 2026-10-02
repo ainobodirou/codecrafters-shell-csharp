@@ -235,7 +235,7 @@ class ShellProgram
         List<string> externExecutables = FindAllExecutables();
         foreach (string executable in externExecutables)
         {
-            commandTrie.insert(executable);
+            commandTrie.insert(executable.Trim());
         }
 
          while (runshell)
