@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
 
 class Trie
 {
-    private class TrieNode
+    class TrieNode
     {
-         public TrieNode[] children = new TrieNode[26];
-         public bool isWordEnd = false;
+        public SortedDictionary<char, TrieNode> Children {get; } = new SortedDictionary<char, TrieNode>();
+        public bool IsEndOfWord { get; set; }
     }
+
     TrieNode root;
     public Trie() {
         root = new TrieNode();
@@ -15,18 +14,18 @@ class Trie
 
     public void insert(string key)
     {
-        TrieNode pCrawl = root;
-        for (int i = 0; i < key.Length; i++)
-        {
-            int index = key[i] - 'a';
-            if (pCrawl.children[index] == null)
+        TrieNode current = root;
+
+        foreach(char character in key){
+            if(!current.Children.TryGetValue(character, out TrieNode? next))
             {
-                pCrawl.children[index] = new TrieNode();
+                next = new TrieNode();
+                current.Children[character] = next;
             }
-            pCrawl = pCrawl.children[index];
-            // Mark last node as leaf
+            current = next;
+        
         }
-        pCrawl.isWordEnd = true;
+        current.IsEndOfWord = true;
     }
 
     public string GetCompletion(string query)
@@ -36,36 +35,39 @@ class Trie
                 return "";
             }
         // autocomplete the typed command
-        TrieNode pCrawl = root;
-        for(int i = 0; i <query.Length; i++)
+        TrieNode current = root;
+        foreach(char character in query)
         {
             
-            int index = query[i] - 'a';
-            if(index < 0 || index >= 26)
+            if(!current.Children.TryGetValue(character, out current))
             {
                 return "";
             }
-            if (pCrawl.children[index] == null)
+            if (current.Children[character] == null)
             {
                 return "";
             }
-            pCrawl = pCrawl.children[index];
+            current = current.Children[character];
         }
-        return AutoComplete(pCrawl, query);
+        return AutoComplete(root, query);
     }
         string AutoComplete(TrieNode root, string currPrefix) {
         // found a string in Trie with the given prefix
-        if (root.isWordEnd) {
+        if (root.IsEndOfWord) {
             return currPrefix;
         }
-        for (int i = 0; i < 26; i++) {
-            if (root.children[i] != null) {
-                // child node character value
-                char c = (char)(i + 'a');
-                return AutoComplete(root.children[i], currPrefix + c);
+        foreach(KeyValuePair<char, TrieNode> child in root.Children)
+        {
+            char nextCharacter = child.Key;
+            TrieNode nextNode = child.Value;
+            string result = AutoComplete(nextNode, currPrefix + nextCharacter);
+
+            if(result.Length > 0)
+            {
+                return result;
             }
         }
-        return "";
+        return string.Empty;
     }
 }
 
