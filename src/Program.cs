@@ -237,7 +237,11 @@ class ShellProgram
         {
             commandTrie.insert(executable.Trim());
         }
-        Console.WriteLine(externExecutables);
+        foreach (string executable in externExecutables)
+        {
+            Console.Error.WriteLine($"Found executable: [{executable}]");
+
+        }
 
          while (runshell)
         {
