@@ -189,7 +189,6 @@ class ShellProgram
             if (key.Key == ConsoleKey.Tab)
             {
                 string prefix = buffer.ToString();
-                Console.WriteLine("prefix is:" + prefix);
                 string completion = commandTrie.GetCompletion(prefix);
                 if (completion == "")
                 {
@@ -238,6 +237,7 @@ class ShellProgram
         {
             commandTrie.insert(executable.Trim());
         }
+        Console.WriteLine(externExecutables);
 
          while (runshell)
         {
