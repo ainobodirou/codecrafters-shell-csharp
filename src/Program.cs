@@ -285,7 +285,6 @@ class ShellProgram
         string? pathEnv = Environment.GetEnvironmentVariable("PATH");
         if (string.IsNullOrWhiteSpace(pathEnv))
         {
-            Console.WriteLine("PATH empty");
             return [];
         }
 
@@ -310,18 +309,18 @@ class ShellProgram
             }
             catch (UnauthorizedAccessException)
             {
-                Console.WriteLine($"Access denied to: {dir}");
+                break;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading {dir}: {ex.Message}");
+                break;
             }
         }
+        foundExecutables.OrderBy(x => x, StringComparer.Ordinal);
         return foundExecutables.ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"Unexpected error: {ex.Message}");
             return [];
         }
     }
