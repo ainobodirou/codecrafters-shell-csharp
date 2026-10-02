@@ -305,6 +305,7 @@ class ShellProgram
                 {
                     string fileName = Path.GetFileName(exeFile);
                     foundExecutables.Add(fileName);
+                    continue;
                 }
             }
             catch (UnauthorizedAccessException)
