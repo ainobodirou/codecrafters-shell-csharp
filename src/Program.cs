@@ -322,6 +322,7 @@ class ShellProgram
         catch (Exception ex)
         {
             Console.WriteLine($"Unexpected error: {ex.Message}");
+            return [];
         }
     }
     
