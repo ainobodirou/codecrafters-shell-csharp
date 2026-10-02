@@ -189,6 +189,7 @@ class ShellProgram
             if (key.Key == ConsoleKey.Tab)
             {
                 string prefix = buffer.ToString();
+                Console.WriteLine("prefix is:" + prefix);
                 string completion = commandTrie.GetCompletion(prefix);
                 if (completion == "")
                 {
@@ -312,7 +313,7 @@ class ShellProgram
                 {
                     continue;
                 }
-                foreach (string exeFile in Directory.EnumerateFiles(trimmeDir))
+                foreach (string exeFile in Directory.EnumerateFiles(trimmeDir, "*"))
                 {
                         if (IsExecutable(exeFile))
                         {
