@@ -235,7 +235,8 @@ class ShellProgram
         List<string> externExecutables = FindAllExecutables();
         foreach (string executable in externExecutables)
         {
-            commandTrie.insert(executable.Trim());
+            string commandName = Path.GetFileName(executable);
+            commandTrie.insert(commandName);
         }
         foreach (string executable in externExecutables)
         {
@@ -328,15 +329,15 @@ class ShellProgram
             }
             catch (UnauthorizedAccessException)
             {
-                break;
+                continue;
             }
             catch (Exception ex)
             {
-                break;
+                continue;
             }
         }
-        foundExecutables.OrderBy(x => x, StringComparer.Ordinal);
-        return foundExecutables.ToList();
+        var executables = foundExecutables.OrderBy(x => x, StringComparer.Ordinal);
+        return executables.ToList();
         }
         catch (Exception)
         {

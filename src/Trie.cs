@@ -43,13 +43,8 @@ class Trie
             {
                 return "";
             }
-            if (current.Children[character] == null)
-            {
-                return "";
-            }
-            current = current.Children[character];
         }
-        return AutoComplete(root, query);
+        return AutoComplete(current, query);
     }
         string AutoComplete(TrieNode root, string currPrefix) {
         // found a string in Trie with the given prefix
