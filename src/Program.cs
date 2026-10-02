@@ -238,11 +238,7 @@ class ShellProgram
             string commandName = Path.GetFileName(executable);
             commandTrie.insert(commandName);
         }
-        foreach (string executable in externExecutables)
-        {
-            Console.Error.WriteLine($"Found executable: [{executable}]");
 
-        }
 
          while (runshell)
         {
